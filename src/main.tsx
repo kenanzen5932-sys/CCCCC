@@ -200,7 +200,7 @@ function RevealApproval({onApprove}:{onApprove:()=>void}) {
   return <motion.main className="reveal-page page" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0,filter:'blur(10px)'}}>
     <motion.div className="reveal-emblem" initial={{scale:0,rotate:-45}} animate={{scale:1,rotate:0}} transition={{type:'spring',duration:.7}}><ShieldCheck size={38}/><i/></motion.div>
     <motion.p className="mono green" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:.15}}>// KİMLİK DOĞRULANDI</motion.p>
-    <motion.h1 initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.25}}>TEBRİKLER ELİZE</motion.h1>
+    <motion.h1 initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.25}}>TEBRİKLER ELİZA</motion.h1>
     <motion.p className="reveal-copy" initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.38}}>ARTIK BENİ<br/><span>GÖREBİLİRSİN</span></motion.p>
     <motion.button className="primary-button reveal-button" onClick={onApprove} initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:.55}} whileTap={{scale:.97}}><span>ONAYLA</span><Check size={18}/><i/></motion.button>
     <motion.small initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.75}}>GİZLİ DOSYALARA ERİŞİM İÇİN ONAYLA</motion.small>
@@ -237,7 +237,7 @@ function App(){
     music.volume=.01;void music.play().then(()=>{music.pause();music.currentTime=0;music.volume=.72}).catch(()=>{music.volume=.72});
   };
   useEffect(()=>{if(phase!=='reveal')return;const music=musicRef.current;if(!music)return;music.volume=.72;music.currentTime=0;void music.play().catch(()=>{})},[phase]);
-  return <div className="app" onPointerDown={handlePointerDown}><audio ref={musicRef} src="/Martino - Duy Beni Jenerik Müziği  Full.mp3" preload="auto" loop playsInline/><Background/><StatusBar stage={stage}/><AnimatePresence mode="wait">{phase==='intro'&&<Intro key="intro" onStart={()=>setPhase('briefing')}/>} {phase==='briefing'&&<Briefing key="brief" onContinue={()=>setPhase('challenge')}/>} {phase==='challenge'&&<ChallengeView key={`c${stage}`} stage={stage} onCorrect={next}/>} {phase==='maze'&&<ScaryMaze key="maze" onFinished={()=>setPhase('reveal')}/>} {phase==='reveal'&&<RevealApproval key="reveal" onApprove={()=>setPhase('complete')}/>} {phase==='complete'&&<Complete key="complete"/>}</AnimatePresence><SecurityLayer/></div>
+  return <div className="app" onPointerDown={handlePointerDown}><audio ref={musicRef} src="/final-music.mp3" preload="auto" loop playsInline/><Background/><StatusBar stage={stage}/><AnimatePresence mode="wait">{phase==='intro'&&<Intro key="intro" onStart={()=>setPhase('briefing')}/>} {phase==='briefing'&&<Briefing key="brief" onContinue={()=>setPhase('challenge')}/>} {phase==='challenge'&&<ChallengeView key={`c${stage}`} stage={stage} onCorrect={next}/>} {phase==='maze'&&<ScaryMaze key="maze" onFinished={()=>setPhase('reveal')}/>} {phase==='reveal'&&<RevealApproval key="reveal" onApprove={()=>setPhase('complete')}/>} {phase==='complete'&&<Complete key="complete"/>}</AnimatePresence><SecurityLayer/></div>
 }
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
