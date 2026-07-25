@@ -10,7 +10,7 @@ type Choice = { id: string; label: string };
 type Challenge = {
   id: number;
   code: string;
-  type: 'choice' | 'memory' | 'sequence' | 'emoji' | 'blur' | 'hidden' | 'drag' | 'tiles' | 'intruder' | 'person';
+  type: 'choice' | 'memory' | 'sequence' | 'emoji' | 'blur' | 'hidden' | 'drag' | 'tiles' | 'intruder' | 'person' | 'text';
   eyebrow: string;
   title: string;
   description: string;
@@ -29,6 +29,7 @@ const challenges: Challenge[] = [
   { id: 8, code: 'KİLİT_08', type: 'tiles', eyebrow: 'Mini kilit oyunu', title: 'Üç parçalı kilidi aç.', description: 'Parçalara dokunarak anahtar desenini oluştur: ● ▲ ■', answer:'done' },
   { id: 9, code: 'KARAR_09', type: 'choice', eyebrow: 'Arkadaşlık sorusu', title: 'Azra kaşar mı ? .', description: 'Arkadaşımız Azra için aşağıdaki ifadelerden hangisi doğrudur?', choices: [{id:'a',label:'kaşarın önde gideni'},{id:'b',label:'çok edepli ve namuslu'}], answer:'a' },
   { id: 10, code: 'SON_EŞİK', type: 'choice', eyebrow: 'Son karar', title: 'Bir arkadaş baskı altında kalırsa ne yaparsın?', description: 'Azra veya başka biri istemediği bir durumda kalırsa doğru yaklaşım hangisidir?', choices: [{id:'a',label:'Sınırlarına saygı duyar ve güvende olmasına yardım ederim.'},{id:'b',label:'Kalabalığın baskısına katılırım.'}], answer:'a' },
+  { id: 11, code: 'BAĞ_11', type: 'text', eyebrow: 'Özel tarih', title: "Eliza ve Never'ın sevgili olduğu tarihi yaz.", description: 'Tarihi gün.ay.yıl formatında eksiksiz gir.', answer:'24.05.2026' },
 ];
 
 const fragments = ['NX-731', 'KANAL KAPALI', '0x6A', 'İZLENİYOR', 'PUZZLE: 96%', 'NEVER_NODE', 'ŞİFRELİ'];
@@ -88,7 +89,7 @@ function Briefing({onContinue}:{onContinue:()=>void}) {
       <div className="briefing-content">
         <p className="mono green">&gt; KİMLİK DOĞRULANDI</p>
         <h2>MERHABA ELİZA,<br/><span>HOŞ GELDİN.</span></h2>
-        <p>Gerçekten beni görmek istiyorsan bu sınavı geçmen gerekiyor. Önünde <strong>10 basit soru ve puzzle</strong> var.</p>
+        <p>Gerçekten beni görmek istiyorsan bu sınavı geçmen gerekiyor. Önünde <strong>11 basit soru ve puzzle</strong> var.</p>
         <div className="rules">
           <div><span>01</span><p>Her görev yalnızca bir önceki tamamlandığında açılır.</p></div>
           <div><span>02</span><p>Cevaplarını dikkatle seç. Sistem tüm sapmaları kaydeder.</p></div>
@@ -125,15 +126,16 @@ function ChallengeView({stage,onCorrect}:{stage:number,onCorrect:()=>void}) {
   const [feedback,setFeedback]=useState<Feedback>('idle');
   const [selected,setSelected]=useState<string>('');
   const [memoryVisible,setMemoryVisible]=useState(stage===2);
-  useEffect(()=>{setFeedback('idle');setSelected('');setMemoryVisible(stage===2);if(stage===2){const t=setTimeout(()=>setMemoryVisible(false),3000);return()=>clearTimeout(t)}},[stage]);
+  const [textAnswer,setTextAnswer]=useState('');
+  useEffect(()=>{setFeedback('idle');setSelected('');setTextAnswer('');setMemoryVisible(stage===2);if(stage===2){const t=setTimeout(()=>setMemoryVisible(false),3000);return()=>clearTimeout(t)}},[stage]);
   const submit=(id:string)=>{
     if(feedback!=='idle')return;setSelected(id);
     if(id===ch.answer){setFeedback('correct');setTimeout(onCorrect,650)}else{setFeedback('wrong');setTimeout(()=>{setFeedback('idle');setSelected('')},750)}
   };
   return <motion.main className="challenge-page page" key={stage} initial={{opacity:0,x:35}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-35}}>
     <div className="progress-area">
-      <div className="progress-label"><span>GÖREV {String(stage).padStart(2,'0')} <em>/ 10</em></span><small>{stage*10}% TAMAMLANDI</small></div>
-      <div className="progress-track"><motion.i initial={{width:`${(stage-1)*10}%`}} animate={{width:`${stage*10}%`}} transition={{duration:.8,ease:'easeOut'}} /></div>
+      <div className="progress-label"><span>GÖREV {String(stage).padStart(2,'0')} <em>/ {challenges.length}</em></span><small>{Math.round(stage/challenges.length*100)}% TAMAMLANDI</small></div>
+      <div className="progress-track"><motion.i initial={{width:`${(stage-1)/challenges.length*100}%`}} animate={{width:`${stage/challenges.length*100}%`}} transition={{duration:.8,ease:'easeOut'}} /></div>
       <div className="stage-nodes">{challenges.map((_,i)=><i key={i} className={i<stage?'active':''}/>)}</div>
     </div>
     <section className="challenge-layout">
@@ -142,7 +144,7 @@ function ChallengeView({stage,onCorrect}:{stage:number,onCorrect:()=>void}) {
         <div className="card-noise"/><div className="difficulty"><span>ZORLUK</span>{Array.from({length:5},(_,i)=><i key={i} className={i<Math.ceil(stage/2)?'on':''}/>)}</div>
         <div className="challenge-copy"><p className="mono green">// {ch.code}</p><h2>{ch.title}</h2><p>{ch.description}</p></div>
         {ch.type==='memory' && <MemoryVisual revealed={memoryVisible}/>} {ch.type==='blur'&&<BlurVisual/>} {ch.type==='hidden'&&<HiddenVisual/>} {ch.type==='person'&&<PersonClue/>}
-        {ch.type==='drag' ? <DragPuzzle onSolved={()=>submit('done')}/> : ch.type==='tiles' ? <TilePuzzle onSolved={()=>submit('done')}/> : <div className={`choices ${ch.type==='choice'&&stage===1?'symbol-choices':''}`}>{ch.choices?.map((choice,index)=><button key={choice.id} className={`choice ${selected===choice.id?'selected':''}`} onClick={()=>submit(choice.id)}><span className="choice-key">{String.fromCharCode(65+index)}</span><span>{choice.label}</span><i>{selected===choice.id?<Check size={16}/>:null}</i></button>)}</div>}
+        {ch.type==='drag' ? <DragPuzzle onSolved={()=>submit('done')}/> : ch.type==='tiles' ? <TilePuzzle onSolved={()=>submit('done')}/> : ch.type==='text' ? <form className="date-answer" onSubmit={event=>{event.preventDefault();submit(textAnswer.trim())}}><label htmlFor="special-date">TARİH</label><input id="special-date" value={textAnswer} onChange={event=>setTextAnswer(event.target.value)} inputMode="numeric" autoComplete="off" placeholder="GG.AA.YYYY" maxLength={10} disabled={feedback!=='idle'}/><button className="secondary-button" type="submit" disabled={textAnswer.trim().length!==10}>CEVABI ONAYLA</button></form> : <div className={`choices ${ch.type==='choice'&&stage===1?'symbol-choices':''}`}>{ch.choices?.map((choice,index)=><button key={choice.id} className={`choice ${selected===choice.id?'selected':''}`} onClick={()=>submit(choice.id)}><span className="choice-key">{String.fromCharCode(65+index)}</span><span>{choice.label}</span><i>{selected===choice.id?<Check size={16}/>:null}</i></button>)}</div>}
         <div className="card-footer"><span><Lock size={12}/> CEVAP ŞİFRELİ İLETİLECEK</span><span>DENEME: ∞</span></div>
       </div>
     </section>
@@ -231,7 +233,7 @@ function SecurityLayer() {
 
 function App(){
   const[phase,setPhase]=useState<Phase>('intro');const[stage,setStage]=useState(1);const musicRef=useRef<HTMLAudioElement>(null);const musicUnlocked=useRef(false);
-  const next=()=>{if(stage===10)setPhase('maze');else setStage(s=>s+1)};
+  const next=()=>{if(stage===challenges.length)setPhase('maze');else setStage(s=>s+1)};
   const handlePointerDown=(event:React.PointerEvent<HTMLDivElement>)=>{
     playClickSound(event.target);const music=musicRef.current;if(!music||musicUnlocked.current)return;musicUnlocked.current=true;
     music.volume=.01;void music.play().then(()=>{music.pause();music.currentTime=0;music.volume=.72}).catch(()=>{music.volume=.72});
