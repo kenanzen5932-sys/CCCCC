@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Check, ChevronRight, CircleAlert, Eye, Fingerprint, GripVertical, Lock, ShieldAlert, ShieldCheck, Terminal, Timer, X } from 'lucide-react';
 import './styles.css';
 
-type Phase = 'intro' | 'briefing' | 'challenge' | 'maze' | 'complete';
+type Phase = 'intro' | 'briefing' | 'challenge' | 'maze' | 'reveal' | 'complete';
 type Feedback = 'idle' | 'correct' | 'wrong';
 type Choice = { id: string; label: string };
 type Challenge = {
@@ -196,6 +196,17 @@ function ScaryMaze({onFinished}:{onFinished:()=>void}) {
   </motion.main>
 }
 
+function RevealApproval({onApprove}:{onApprove:()=>void}) {
+  return <motion.main className="reveal-page page" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0,filter:'blur(10px)'}}>
+    <motion.div className="reveal-emblem" initial={{scale:0,rotate:-45}} animate={{scale:1,rotate:0}} transition={{type:'spring',duration:.7}}><ShieldCheck size={38}/><i/></motion.div>
+    <motion.p className="mono green" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:.15}}>// KİMLİK DOĞRULANDI</motion.p>
+    <motion.h1 initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.25}}>TEBRİKLER ELİZE</motion.h1>
+    <motion.p className="reveal-copy" initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.38}}>ARTIK BENİ<br/><span>GÖREBİLİRSİN</span></motion.p>
+    <motion.button className="primary-button reveal-button" onClick={onApprove} initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{delay:.55}} whileTap={{scale:.97}}><span>ONAYLA</span><Check size={18}/><i/></motion.button>
+    <motion.small initial={{opacity:0}} animate={{opacity:1}} transition={{delay:.75}}>GİZLİ DOSYALARA ERİŞİM İÇİN ONAYLA</motion.small>
+  </motion.main>
+}
+
 function SecureImage({index,onViewed}:{index:number,onViewed:()=>void}) {
   const [open,setOpen]=useState(false); const [used,setUsed]=useState(false); const [count,setCount]=useState(3);
   const openIt=()=>{if(used)return;setOpen(true);setUsed(true);setCount(3)};
@@ -218,6 +229,15 @@ function SecurityLayer() {
   return <>{<AnimatePresence>{obscured&&<motion.div className="privacy-screen" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><Eye/><strong>İÇERİK GİZLENDİ</strong><span>Güvenli alana dönmek için pencereyi etkinleştir.</span></motion.div>}</AnimatePresence>}{warning&&<div className="security-warning"><ShieldAlert/>{warning}</div>}<div className="session-watermark">REACH • GİZLİ OTURUM • {new Date().getFullYear()}</div></>
 }
 
-function App(){const[phase,setPhase]=useState<Phase>('intro');const[stage,setStage]=useState(1);const next=()=>{if(stage===10)setPhase('maze');else setStage(s=>s+1)};return <div className="app" onPointerDown={event=>playClickSound(event.target)}><Background/><StatusBar stage={stage}/><AnimatePresence mode="wait">{phase==='intro'&&<Intro key="intro" onStart={()=>setPhase('briefing')}/>} {phase==='briefing'&&<Briefing key="brief" onContinue={()=>setPhase('challenge')}/>} {phase==='challenge'&&<ChallengeView key={`c${stage}`} stage={stage} onCorrect={next}/>} {phase==='maze'&&<ScaryMaze key="maze" onFinished={()=>setPhase('complete')}/>} {phase==='complete'&&<Complete key="complete"/>}</AnimatePresence><SecurityLayer/></div>}
+function App(){
+  const[phase,setPhase]=useState<Phase>('intro');const[stage,setStage]=useState(1);const musicRef=useRef<HTMLAudioElement>(null);const musicUnlocked=useRef(false);
+  const next=()=>{if(stage===10)setPhase('maze');else setStage(s=>s+1)};
+  const handlePointerDown=(event:React.PointerEvent<HTMLDivElement>)=>{
+    playClickSound(event.target);const music=musicRef.current;if(!music||musicUnlocked.current)return;musicUnlocked.current=true;
+    music.volume=.01;void music.play().then(()=>{music.pause();music.currentTime=0;music.volume=.72}).catch(()=>{music.volume=.72});
+  };
+  useEffect(()=>{if(phase!=='reveal')return;const music=musicRef.current;if(!music)return;music.volume=.72;music.currentTime=0;void music.play().catch(()=>{})},[phase]);
+  return <div className="app" onPointerDown={handlePointerDown}><audio ref={musicRef} src="/Martino - Duy Beni Jenerik Müziği  Full.mp3" preload="auto" loop playsInline/><Background/><StatusBar stage={stage}/><AnimatePresence mode="wait">{phase==='intro'&&<Intro key="intro" onStart={()=>setPhase('briefing')}/>} {phase==='briefing'&&<Briefing key="brief" onContinue={()=>setPhase('challenge')}/>} {phase==='challenge'&&<ChallengeView key={`c${stage}`} stage={stage} onCorrect={next}/>} {phase==='maze'&&<ScaryMaze key="maze" onFinished={()=>setPhase('reveal')}/>} {phase==='reveal'&&<RevealApproval key="reveal" onApprove={()=>setPhase('complete')}/>} {phase==='complete'&&<Complete key="complete"/>}</AnimatePresence><SecurityLayer/></div>
+}
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
