@@ -33,6 +33,19 @@ const challenges: Challenge[] = [
 
 const fragments = ['NX-731', 'KANAL KAPALI', '0x6A', 'İZLENİYOR', 'PUZZLE: 96%', 'NEVER_NODE', 'ŞİFRELİ'];
 
+let sharedAudioContext: AudioContext | null = null;
+function playClickSound(target:EventTarget|null) {
+  if(!(target instanceof Element)||!target.closest('button'))return;
+  const AudioContextClass=window.AudioContext||(window as typeof window & {webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
+  if(!AudioContextClass)return;
+  const context=sharedAudioContext??=new AudioContextClass();
+  if(context.state==='suspended')void context.resume();
+  const now=context.currentTime;const oscillator=context.createOscillator();const gain=context.createGain();
+  oscillator.type='sine';oscillator.frequency.setValueAtTime(880,now);oscillator.frequency.exponentialRampToValueAtTime(1320,now+.045);
+  gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.075,now+.006);gain.gain.exponentialRampToValueAtTime(.0001,now+.075);
+  oscillator.connect(gain);gain.connect(context.destination);oscillator.start(now);oscillator.stop(now+.08);
+}
+
 function Background() {
   const particles = useMemo(() => Array.from({length: 24}, (_, i) => ({
     id:i, left:(i * 41.7) % 100, top:(i * 27.3) % 100, delay:(i%8)*.7, duration:5+(i%7)
@@ -115,7 +128,7 @@ function ChallengeView({stage,onCorrect}:{stage:number,onCorrect:()=>void}) {
   useEffect(()=>{setFeedback('idle');setSelected('');setMemoryVisible(stage===2);if(stage===2){const t=setTimeout(()=>setMemoryVisible(false),3000);return()=>clearTimeout(t)}},[stage]);
   const submit=(id:string)=>{
     if(feedback!=='idle')return;setSelected(id);
-    if(id===ch.answer){setFeedback('correct');setTimeout(onCorrect,1450)}else{setFeedback('wrong');setTimeout(()=>{setFeedback('idle');setSelected('')},1200)}
+    if(id===ch.answer){setFeedback('correct');setTimeout(onCorrect,650)}else{setFeedback('wrong');setTimeout(()=>{setFeedback('idle');setSelected('')},750)}
   };
   return <motion.main className="challenge-page page" key={stage} initial={{opacity:0,x:35}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-35}}>
     <div className="progress-area">
@@ -137,7 +150,7 @@ function ChallengeView({stage,onCorrect}:{stage:number,onCorrect:()=>void}) {
   </motion.main>
 }
 
-function FeedbackOverlay({type}:{type:'correct'|'wrong'}) {const ok=type==='correct';return <motion.div className={`feedback ${type}`} initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><motion.div initial={{scale:.65,opacity:0}} animate={{scale:1,opacity:1}}><div className="feedback-icon">{ok?<ShieldCheck size={42}/>:<ShieldAlert size={42}/>}</div><p>{ok?'ERİŞİM ONAYLANDI':'ERİŞİM REDDEDİLDİ'}</p><span>{ok?'SONRAKİ KATMAN AÇILIYOR...':'SAPMA ALGILANDI // TEKRAR DENE'}</span></motion.div></motion.div>}
+function FeedbackOverlay({type}:{type:'correct'|'wrong'}) {const ok=type==='correct';return <motion.div className={`feedback ${type}`} initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:.12}}><motion.div initial={{scale:.92,opacity:0}} animate={{scale:1,opacity:1}} transition={{duration:.14}}><div className="feedback-icon">{ok?<ShieldCheck size={42}/>:<ShieldAlert size={42}/>}</div><p>{ok?'ERİŞİM ONAYLANDI':'ERİŞİM REDDEDİLDİ'}</p><span>{ok?'SONRAKİ KATMAN AÇILIYOR...':'SAPMA ALGILANDI // TEKRAR DENE'}</span></motion.div></motion.div>}
 
 const mazePath='M 54 548 L 54 462 L 132 462 L 132 520 L 218 520 L 218 398 L 92 398 L 92 306 L 270 306 L 270 454 L 350 454 L 350 246 L 176 246 L 176 154 L 398 154 L 398 340 L 472 340 L 472 92 L 286 92 L 286 48 L 526 48';
 
@@ -205,6 +218,6 @@ function SecurityLayer() {
   return <>{<AnimatePresence>{obscured&&<motion.div className="privacy-screen" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><Eye/><strong>İÇERİK GİZLENDİ</strong><span>Güvenli alana dönmek için pencereyi etkinleştir.</span></motion.div>}</AnimatePresence>}{warning&&<div className="security-warning"><ShieldAlert/>{warning}</div>}<div className="session-watermark">REACH • GİZLİ OTURUM • {new Date().getFullYear()}</div></>
 }
 
-function App(){const[phase,setPhase]=useState<Phase>('intro');const[stage,setStage]=useState(1);const next=()=>{if(stage===10)setPhase('maze');else setStage(s=>s+1)};return <div className="app"><Background/><StatusBar stage={stage}/><AnimatePresence mode="wait">{phase==='intro'&&<Intro key="intro" onStart={()=>setPhase('briefing')}/>} {phase==='briefing'&&<Briefing key="brief" onContinue={()=>setPhase('challenge')}/>} {phase==='challenge'&&<ChallengeView key={`c${stage}`} stage={stage} onCorrect={next}/>} {phase==='maze'&&<ScaryMaze key="maze" onFinished={()=>setPhase('complete')}/>} {phase==='complete'&&<Complete key="complete"/>}</AnimatePresence><SecurityLayer/></div>}
+function App(){const[phase,setPhase]=useState<Phase>('intro');const[stage,setStage]=useState(1);const next=()=>{if(stage===10)setPhase('maze');else setStage(s=>s+1)};return <div className="app" onPointerDown={event=>playClickSound(event.target)}><Background/><StatusBar stage={stage}/><AnimatePresence mode="wait">{phase==='intro'&&<Intro key="intro" onStart={()=>setPhase('briefing')}/>} {phase==='briefing'&&<Briefing key="brief" onContinue={()=>setPhase('challenge')}/>} {phase==='challenge'&&<ChallengeView key={`c${stage}`} stage={stage} onCorrect={next}/>} {phase==='maze'&&<ScaryMaze key="maze" onFinished={()=>setPhase('complete')}/>} {phase==='complete'&&<Complete key="complete"/>}</AnimatePresence><SecurityLayer/></div>}
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
