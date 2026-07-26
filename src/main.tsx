@@ -210,8 +210,8 @@ function RevealApproval({onApprove}:{onApprove:()=>void}) {
 }
 
 function SecureImage({index,onViewed}:{index:number,onViewed:()=>void}) {
-  const [open,setOpen]=useState(false); const [used,setUsed]=useState(false); const [count,setCount]=useState(3);
-  const openIt=()=>{if(used)return;setOpen(true);setUsed(true);setCount(3)};
+  const [open,setOpen]=useState(false); const [used,setUsed]=useState(false); const [count,setCount]=useState(5);
+  const openIt=()=>{if(used)return;setOpen(true);setUsed(true);setCount(5)};
   useEffect(()=>{if(!open)return;const timer=setInterval(()=>setCount(c=>{if(c<=1){clearInterval(timer);setOpen(false);onViewed();return 0}return c-1}),1000);return()=>clearInterval(timer)},[open]);
   const imageSrc=index===1?'/1234.png':'/123.png';
   return <><button className={`secure-thumb ${used?'used':''}`} onClick={openIt} disabled={used}><div className="classified-art"><img src={imageSrc} alt={`Gizli dosya ${index}`} draggable={false}/><div className="watermark">NEVER // {Math.random().toString(16).slice(2,8).toUpperCase()}</div></div><div className="thumb-overlay">{used?<><X/><span>GÖRSEL KİLİTLENDİ</span></>:<><Eye/><span>TEK SEFER GÖRÜNTÜLE</span></>}</div><span className="image-label">DOSYA_0{index}.ENC</span></button><AnimatePresence>{open&&<motion.div className="image-modal" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0,filter:'blur(24px)'}}><img className="secure-full-image" src={imageSrc} alt={`Gizli dosya ${index}`} draggable={false}/><div className="countdown"><Timer/><strong>{count}</strong><span>SANİYE SONRA KAPANACAK</span></div></motion.div>}</AnimatePresence></>
