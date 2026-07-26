@@ -10,7 +10,7 @@ type Choice = { id: string; label: string };
 type Challenge = {
   id: number;
   code: string;
-  type: 'choice' | 'memory' | 'sequence' | 'emoji' | 'blur' | 'hidden' | 'drag' | 'tiles' | 'intruder' | 'person' | 'text';
+  type: 'choice' | 'memory' | 'sequence' | 'emoji' | 'blur' | 'hidden' | 'drag' | 'tiles' | 'intruder' | 'person' | 'personText' | 'text';
   eyebrow: string;
   title: string;
   description: string;
@@ -25,11 +25,12 @@ const challenges: Challenge[] = [
   { id: 4, code: 'EMOJİ_04', type: 'emoji', eyebrow: 'Emoji bulmacası', title: 'Emojilerin anlattığı programı bul.', description: 'İki ipucunu birleştir ve doğru cevabı seç.', choices: [{id:'a',label:'💍 + 🏠 = Kısmetse Olur'},{id:'b',label:'❤️ + 🚪 = Aşk Kapısı'},{id:'c',label:'👁️ + 📺 = İzleyici Evi'}], answer:'a' },
   { id: 5, code: 'SİLUET_05', type: 'blur', eyebrow: 'Görsel bulmaca', title: 'Bulanık nesneyi tanı.', description: 'Görüntüdeki nesne hangisi?', choices: [{id:'a',label:'Gül'},{id:'b',label:'Yüzük'},{id:'c',label:'Anahtar'}], answer:'c' },
   { id: 6, code: 'KARAKTER_06', type: 'person', eyebrow: 'Kısmetse Olur 2026', title: 'Bu kim?', description: 'İnternetteki ipucu bağlantısını aç, kişiyi bul ve doğru ismi seç.', choices: [{id:'a',label:'Aleyna Özgün'},{id:'b',label:'Ceren Topkara'},{id:'c',label:'Selin Ünal'}], answer:'a' },
-  { id: 7, code: 'EŞLEŞME_07', type: 'drag', eyebrow: 'Basit sıralama', title: 'Parçaları küçükten büyüğe sırala.', description: 'Üç sayı kartını doğru sıraya getir.', answer:'done' },
-  { id: 8, code: 'KİLİT_08', type: 'tiles', eyebrow: 'Mini kilit oyunu', title: 'Üç parçalı kilidi aç.', description: 'Parçalara dokunarak anahtar desenini oluştur: ● ▲ ■', answer:'done' },
-  { id: 9, code: 'KARAR_09', type: 'choice', eyebrow: 'Arkadaşlık sorusu', title: 'Azra kaşar mı ? .', description: 'Arkadaşımız Azra için aşağıdaki ifadelerden hangisi doğrudur?', choices: [{id:'a',label:'kaşarın önde gideni'},{id:'b',label:'çok edepli ve namuslu'}], answer:'a' },
-  { id: 10, code: 'SON_EŞİK', type: 'choice', eyebrow: 'Son karar', title: 'Bir arkadaş baskı altında kalırsa ne yaparsın?', description: 'Azra veya başka biri istemediği bir durumda kalırsa doğru yaklaşım hangisidir?', choices: [{id:'a',label:'Sınırlarına saygı duyar ve güvende olmasına yardım ederim.'},{id:'b',label:'Kalabalığın baskısına katılırım.'}], answer:'a' },
-  { id: 11, code: 'BAĞ_11', type: 'text', eyebrow: 'Özel tarih', title: "Eliza ve Never'ın sevgili olduğu tarihi yaz.", description: 'Tarihi gün.ay.yıl formatında eksiksiz gir.', answer:'24.05.2026' },
+  { id: 7, code: 'KARAKTER_07', type: 'personText', eyebrow: 'Kimlik analizi', title: 'Bu kimdir?', description: 'Görseldeki kişinin adını kutuya yaz.', answer:'azra' },
+  { id: 8, code: 'EŞLEŞME_08', type: 'drag', eyebrow: 'Basit sıralama', title: 'Parçaları küçükten büyüğe sırala.', description: 'Üç sayı kartını doğru sıraya getir.', answer:'done' },
+  { id: 9, code: 'KİLİT_09', type: 'tiles', eyebrow: 'Mini kilit oyunu', title: 'Üç parçalı kilidi aç.', description: 'Parçalara dokunarak anahtar desenini oluştur: ● ▲ ■', answer:'done' },
+  { id: 10, code: 'KARAR_10', type: 'choice', eyebrow: 'Arkadaşlık sorusu', title: 'Azra kaşar mı ? .', description: 'Arkadaşımız Azra için aşağıdaki ifadelerden hangisi doğrudur?', choices: [{id:'a',label:'kaşarın önde gideni'},{id:'b',label:'çok edepli ve namuslu'}], answer:'a' },
+  { id: 11, code: 'SON_EŞİK', type: 'choice', eyebrow: 'Son karar', title: 'Bir arkadaş baskı altında kalırsa ne yaparsın?', description: 'Azra veya başka biri istemediği bir durumda kalırsa doğru yaklaşım hangisidir?', choices: [{id:'a',label:'Sınırlarına saygı duyar ve güvende olmasına yardım ederim.'},{id:'b',label:'Kalabalığın baskısına katılırım.'}], answer:'a' },
+  { id: 12, code: 'BAĞ_12', type: 'text', eyebrow: 'Özel tarih', title: "Eliza ve Never'ın sevgili olduğu tarihi yaz.", description: 'Tarihi gün.ay.yıl formatında eksiksiz gir.', answer:'24.05.2026' },
 ];
 
 const fragments = ['NX-731', 'KANAL KAPALI', '0x6A', 'İZLENİYOR', 'PUZZLE: 96%', 'NEVER_NODE', 'ŞİFRELİ'];
@@ -89,7 +90,7 @@ function Briefing({onContinue}:{onContinue:()=>void}) {
       <div className="briefing-content">
         <p className="mono green">&gt; KİMLİK DOĞRULANDI</p>
         <h2>MERHABA ELİZA,<br/><span>HOŞ GELDİN.</span></h2>
-        <p>Gerçekten beni görmek istiyorsan bu sınavı geçmen gerekiyor. Önünde <strong>11 basit soru ve puzzle</strong> var.</p>
+        <p>Gerçekten beni görmek istiyorsan bu sınavı geçmen gerekiyor. Önünde <strong>12 basit soru ve puzzle</strong> var.</p>
         <div className="rules">
           <div><span>01</span><p>Her görev yalnızca bir önceki tamamlandığında açılır.</p></div>
           <div><span>02</span><p>Cevaplarını dikkatle seç. Sistem tüm sapmaları kaydeder.</p></div>
@@ -105,7 +106,7 @@ function MemoryVisual({revealed}:{revealed:boolean}) { return <div className="me
 
 function BlurVisual() { return <div className="blur-visual"><div className="key-shape"><div/><i/><span/></div><div className="focus-frame"><i/><i/><i/><i/></div><span>GÖRÜNTÜ NETLİĞİ: %12</span></div> }
 function HiddenVisual() { return <div className="hidden-visual"><span className="secret s1">3</span><span className="secret s2">1</span><span className="secret s3">6</span><div className="radar"><i/><i/><i/></div><p>Katmanlar arasında gezin.</p></div> }
-function PersonClue() { return <div className="person-clue person-photo-clue"><img src="/aleyna-ozgun.jpg" alt="Kısmetse Olur 2026 yarışmacısı" draggable={false}/><div><strong>KISMETSE OLUR: AŞKIN GÜCÜ 2026</strong><p>Görseldeki yarışmacıyı tanı ve doğru ismi seç.</p></div></div> }
+function PersonClue({azra=false}:{azra?:boolean}) { return <div className="person-clue person-photo-clue"><img src={azra?'/AZRA.jpeg':'/aleyna-ozgun.jpg'} alt={azra?'Azra fotoğrafı':'Kısmetse Olur 2026 yarışmacısı'} draggable={false}/><div><strong>{azra?'KİMLİK DOĞRULAMA':'KISMETSE OLUR: AŞKIN GÜCÜ 2026'}</strong><p>{azra?'Görseldeki kişinin adını doğru şekilde yaz.':'Görseldeki yarışmacıyı tanı ve doğru ismi seç.'}</p></div></div> }
 
 function TilePuzzle({onSolved}:{onSolved:()=>void}) {
   const [items,setItems]=useState(['■','●','▲']);
@@ -130,7 +131,8 @@ function ChallengeView({stage,onCorrect}:{stage:number,onCorrect:()=>void}) {
   useEffect(()=>{setFeedback('idle');setSelected('');setTextAnswer('');setMemoryVisible(stage===2);if(stage===2){const t=setTimeout(()=>setMemoryVisible(false),3000);return()=>clearTimeout(t)}},[stage]);
   const submit=(id:string)=>{
     if(feedback!=='idle')return;setSelected(id);
-    if(id===ch.answer){setFeedback('correct');setTimeout(onCorrect,650)}else{setFeedback('wrong');setTimeout(()=>{setFeedback('idle');setSelected('')},750)}
+    const submitted=ch.type==='personText'?id.trim().toLocaleLowerCase('tr-TR'):id;
+    if(submitted===ch.answer){setFeedback('correct');setTimeout(onCorrect,650)}else{setFeedback('wrong');setTimeout(()=>{setFeedback('idle');setSelected('')},750)}
   };
   return <motion.main className="challenge-page page" key={stage} initial={{opacity:0,x:35}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-35}}>
     <div className="progress-area">
@@ -143,8 +145,8 @@ function ChallengeView({stage,onCorrect}:{stage:number,onCorrect:()=>void}) {
       <div className="glass challenge-card">
         <div className="card-noise"/><div className="difficulty"><span>ZORLUK</span>{Array.from({length:5},(_,i)=><i key={i} className={i<Math.ceil(stage/2)?'on':''}/>)}</div>
         <div className="challenge-copy"><p className="mono green">// {ch.code}</p><h2>{ch.title}</h2><p>{ch.description}</p></div>
-        {ch.type==='memory' && <MemoryVisual revealed={memoryVisible}/>} {ch.type==='blur'&&<BlurVisual/>} {ch.type==='hidden'&&<HiddenVisual/>} {ch.type==='person'&&<PersonClue/>}
-        {ch.type==='drag' ? <DragPuzzle onSolved={()=>submit('done')}/> : ch.type==='tiles' ? <TilePuzzle onSolved={()=>submit('done')}/> : ch.type==='text' ? <form className="date-answer" onSubmit={event=>{event.preventDefault();submit(textAnswer.trim())}}><label htmlFor="special-date">TARİH</label><input id="special-date" value={textAnswer} onChange={event=>setTextAnswer(event.target.value)} inputMode="numeric" autoComplete="off" placeholder="GG.AA.YYYY" maxLength={10} disabled={feedback!=='idle'}/><button className="secondary-button" type="submit" disabled={textAnswer.trim().length!==10}>CEVABI ONAYLA</button></form> : <div className={`choices ${ch.type==='choice'&&stage===1?'symbol-choices':''}`}>{ch.choices?.map((choice,index)=><button key={choice.id} className={`choice ${selected===choice.id?'selected':''}`} onClick={()=>submit(choice.id)}><span className="choice-key">{String.fromCharCode(65+index)}</span><span>{choice.label}</span><i>{selected===choice.id?<Check size={16}/>:null}</i></button>)}</div>}
+        {ch.type==='memory' && <MemoryVisual revealed={memoryVisible}/>} {ch.type==='blur'&&<BlurVisual/>} {ch.type==='hidden'&&<HiddenVisual/>} {ch.type==='person'&&<PersonClue/>} {ch.type==='personText'&&<PersonClue azra/>}
+        {ch.type==='drag' ? <DragPuzzle onSolved={()=>submit('done')}/> : ch.type==='tiles' ? <TilePuzzle onSolved={()=>submit('done')}/> : (ch.type==='text'||ch.type==='personText') ? <form className="date-answer" onSubmit={event=>{event.preventDefault();submit(textAnswer.trim())}}><label htmlFor="text-answer">{ch.type==='personText'?'İSİM':'TARİH'}</label><input id="text-answer" value={textAnswer} onChange={event=>setTextAnswer(event.target.value)} inputMode={ch.type==='personText'?'text':'numeric'} autoComplete="off" autoCapitalize={ch.type==='personText'?'words':'off'} placeholder={ch.type==='personText'?'Adını yaz':'GG.AA.YYYY'} maxLength={ch.type==='personText'?30:10} disabled={feedback!=='idle'}/><button className="secondary-button" type="submit" disabled={ch.type==='personText'?!textAnswer.trim():textAnswer.trim().length!==10}>CEVABI ONAYLA</button></form> : <div className={`choices ${ch.type==='choice'&&stage===1?'symbol-choices':''}`}>{ch.choices?.map((choice,index)=><button key={choice.id} className={`choice ${selected===choice.id?'selected':''}`} onClick={()=>submit(choice.id)}><span className="choice-key">{String.fromCharCode(65+index)}</span><span>{choice.label}</span><i>{selected===choice.id?<Check size={16}/>:null}</i></button>)}</div>}
         <div className="card-footer"><span><Lock size={12}/> CEVAP ŞİFRELİ İLETİLECEK</span><span>DENEME: ∞</span></div>
       </div>
     </section>
